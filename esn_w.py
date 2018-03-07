@@ -24,6 +24,8 @@ import torch.utils.data
 import dataset
 import echotorch.nn as etnn
 from echotorch.transforms import text
+from torch.autograd import Variable
+import echotorch.utils
 
 # Experiment settings
 reservoir_size = 1000
@@ -54,7 +56,7 @@ for idx, author in enumerate(pan18loader_training.dataset.authors):
 n_authors = len(author_to_idx)
 
 # ESN cell
-esn = etnn.LiESN(
+"""esn = etnn.LiESN(
     input_dim=pan18loader_training.dataset.transform.input_dim,
     hidden_dim=reservoir_size,
     output_dim=n_authors,
@@ -64,13 +66,60 @@ esn = etnn.LiESN(
     w_sparsity=w_sparsity,
     learning_algo='inv',
     leaky_rate=leak_rate
-)
+)"""
 
 # Get training data for this fold
 for i, data in enumerate(pan18loader_training):
     # Inputs and labels
     inputs, labels = data
 
-    print(inputs.size())
-    print(labels)
+    # Create time labels
+    author_id = author_to_idx[labels[0]]
+    tag_vector = torch.zeros(inputs.size(1), n_authors)
+    tag_vector[:, author_id] = 1.0
+
+    # To variable
+    inputs, time_labels = Variable(inputs), Variable(tag_vector)
+
+    # Accumulate xTx and xTy
+    # esn(inputs, time_labels)
 # end for
+
+# Finalize training
+# esn.finalize()
+
+# Counters
+successes = 0.0
+count = 0.0
+
+# Get test data
+for i, data in enumerate(pan18loader_test):
+    # Inputs and labels
+    inputs, labels = data
+
+    # Author id
+    author_id = author_to_idx[labels[0]]
+
+    # Predict
+    """y_predicted = esn(inputs)
+
+    # Normalized
+    y_predicted -= torch.min(y_predicted)
+    y_predicted /= torch.max(y_predicted) - torch.min(y_predicted)
+
+    # Sum to one
+    sums = torch.sum(y_predicted, dim=2)
+    for t in range(y_predicted.size(1)):
+        y_predicted[0, t, :] = y_predicted[0, t, :] / sum[0, t]
+    # end for
+
+    # Max average through time
+    y_predicted = echotorch.utils.max_average_through_time(y_predicted, dim=1)
+
+    # Compare
+    if torch.equal(y_predicted, labels):
+        successes += 1.0
+    # end if"""
+# end for
+
+print(u"Accuracy : {}".format(successes / count))
