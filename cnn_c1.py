@@ -26,22 +26,31 @@ import dataset
 from echotorch.transforms import text
 import random
 from torch.autograd import Variable
+import numpy as np
+from modules import CNNC
+import torch.nn as nn
+from torch import optim
 
 # Experience parameter
+voc_size = 77
 window_size = 500
-batch_size = 64
+batch_size = 32
 sample_batch = 4
 epoch_batches = 10
 max_epoch = 1
+stride = 10
+
+# Transformer
+transform = text.Character()
 
 # Author identification training dataset
 pan18loader_training = torch.utils.data.DataLoader(
-    dataset.AuthorIdentificationDataset(root="./data/", download=True, transform=text.Character(), problem=1),
+    dataset.AuthorIdentificationDataset(root="./data/", download=True, transform=transform, problem=0, train=True),
     batch_size=1, shuffle=True)
 
 # Author identification test dataset
 pan18loader_test = torch.utils.data.DataLoader(
-    dataset.AuthorIdentificationDataset(root="./data/", download=True, transform=text.Character(), problem=1,
+    dataset.AuthorIdentificationDataset(root="./data/", download=True, transform=transform, problem=0,
                                         train=False),
     batch_size=1, shuffle=True)
 
@@ -54,56 +63,70 @@ for idx, author in enumerate(pan18loader_training.dataset.authors):
 # Number of authors
 n_authors = len(author_to_idx)
 
-# Total training data
-training_data = list()
-training_labels = list()
+# Training batches
+training_samples = list()
 
 # Get training data
 for i, data in enumerate(pan18loader_training):
     # Inputs and labels
     inputs, labels = data
 
-    # Add
-    training_data.append(inputs)
-    training_labels.append(labels)
+    # Sliding window
+    for s in np.arange(0, inputs.size(1)-window_size, stride):
+        # Get windowed sample
+        window_sample = inputs[:, s:s+window_size]
+
+        # Add to training samples
+        training_samples.append((window_sample, author_to_idx[labels[0]]))
+    # end for
 # end for
 
 # Number of samples
-n_samples = len(training_labels)
+n_training_samples = len(training_samples)
+
+# Shuffle the list
+random.shuffle(training_samples)
+
+# Model
+net = CNNC(vocab_size=voc_size, n_classes=10)
+
+# Loss function
+loss_function = nn.NLLLoss()
+
+# Optimizer
+optimizer = optim.SGD(net.parameters(), lr=0.001)
 
 # For each iteration
 for epoch in range(max_epoch):
     # For each batch
-    for b in range(epoch_batches):
-        # Batch labels
-        batch_labels = torch.LongTensor(batch_size)
+    for b in np.arange(0, n_training_samples-batch_size, batch_size):
+        # Batch
+        batch = torch.LongTensor(batch_size, window_size)
+        labels = torch.LongTensor(batch_size)
 
-        # Get samples for the batch
-        for i in range(batch_size):
-            # Random sample and position
-            random_sample = random.randint(0, n_samples-1)
-            random_sample_size = training_data[random_sample].size(1)
-            random_position = random.randint(0, random_sample_size-window_size-1)
-            sample = training_data[random_sample]
-
-            # Get sequence
-            random_sequence = sample[:, random_position:random_position+window_size]
-
-            # Append
-            if i == 0:
-                batch = random_sequence
-            else:
-                batch = torch.cat((batch, random_sequence), dim=0)
-            # end if
-
-            # Label
-            batch_labels[i] = author_to_idx[training_labels[random_sample][0]]
+        # For each sample
+        index = 0
+        for s in np.arange(b, b+batch_size):
+            batch[index] = training_samples[s][0][0]
+            labels[index] = training_samples[s][1]
+            index += 1
         # end for
 
         # To variable
-        inputs, labels = Variable(batch), Variable(batch_labels)
+        inputs, labels = Variable(batch), Variable(labels)
 
-        # TRAINING
+        # Zero grad
+        net.zero_grad()
+
+        # Compute output
+        log_probs = net(inputs)
+
+        # Loss
+        loss = loss_function(log_probs, labels)
+
+        # Backward and step
+        loss.backward()
+        optimizer.step()
     # end for
 
     # Counter
@@ -135,14 +158,13 @@ for epoch in range(max_epoch):
             author_predictions[pos, 0] = 1.0
         # end for
 
-        # Max average probability through time
+        # Average probability over time
         average_probs = torch.mean(author_predictions, dim=0)
 
         # Predicted author
         _, indice = torch.max(average_probs, dim=0)
 
         # Compare
-
         if torch.equal(labels, indice):
             success += 1.0
         # end if
