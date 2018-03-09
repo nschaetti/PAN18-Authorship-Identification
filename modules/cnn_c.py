@@ -23,9 +23,13 @@ class CNNC(nn.Module):
         :param max_pools:
         """
         super(CNNC, self).__init__()
+        # Properties
+        self.embedding_dim = embedding_dim
 
         # Embedding layer
-        self.embeddings = nn.Embedding(vocab_size, embedding_dim)
+        if embedding_dim > 0:
+            self.embeddings = nn.Embedding(vocab_size, embedding_dim)
+        # end if
 
         # Conv window 1
         self.conv_w1 = nn.Conv2d(in_channels=1, out_channels=out_channels[0],
@@ -57,10 +61,15 @@ class CNNC(nn.Module):
         :return:
         """
         # Embeddings
-        embeds = self.embeddings(x)
+        if self.embeddings_dim > 0:
+            embeds = self.embeddings(x)
 
-        # Add channel dim
-        embeds = torch.unsqueeze(embeds, dim=1)
+            # Add channel dim
+            embeds = torch.unsqueeze(embeds, dim=1)
+        else:
+            # Add channel dim
+            embeds = torch.unsqueeze(x, dim=1)
+        # end if
 
         # Conv window
         out_win1 = F.relu(self.conv_w1(embeds))
