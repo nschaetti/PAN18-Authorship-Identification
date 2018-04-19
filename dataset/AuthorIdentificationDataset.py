@@ -76,11 +76,11 @@ class AuthorIdentificationDataset(Dataset):
         # Read text
         text_content = codecs.open(text_path, 'r', encoding='utf-8').read()
 
-        # No tab and return
-        text_content = text_content.replace(u"\n", u" ").replace(u"\t", u" ")
-
         # Transformed
-        transformed, transformed_size = self.transform(text_content)
+        transformed = self.transform(text_content)
+
+        # Unsqueeze
+        transformed = transformed.squeeze(0)
 
         # Transform
         if self.transform is not None:
@@ -133,7 +133,7 @@ class AuthorIdentificationDataset(Dataset):
         collection_info = json.load(open(os.path.join(self.root, "collection-info.json"), 'r'))
 
         # Problem index
-        problem_index = 0
+        problem_index = 1
 
         # For each entry
         for problem in collection_info:
@@ -176,6 +176,7 @@ class AuthorIdentificationDataset(Dataset):
                         self.texts.append((os.path.join(self.root, problem_name, unknown_folder, ground_truth['unknown-text']), ground_truth['true-author']))
                     # end for
                 # end if
+                problem_index += 1
             elif problem['language'] == self.lang:
                 problem_index += 1
             # end if
