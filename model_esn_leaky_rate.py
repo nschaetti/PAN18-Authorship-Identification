@@ -37,6 +37,7 @@ spectral_radius = 0.95
 input_sparsity = 0.1
 w_sparsity = 0.1
 input_scaling = 0.5
+n_test = 100
 
 # Argument
 args = tools.functions.argument_parser_training_model()
@@ -47,8 +48,15 @@ transformer = transforms.Compose([
     transforms.GloveVector(model=tools.settings.lang_models[args.lang])
 ])
 
+# Results
+results = np.zeros(n_test)
+
 # For each leaky rate values
-for leaky_rate in np.linspace(0.001, 1.0, 30):
+index = 0
+for leaky_rate in np.linspace(0.001, 0.5, n_test):
+    # Log
+    print(u"Leaky rate : {}".format(leaky_rate))
+
     # For each problem
     for problem in np.arange(1, 3):
         # Author identification training dataset
@@ -137,13 +145,18 @@ for leaky_rate in np.linspace(0.001, 1.0, 30):
             y_predicted = echotorch.utils.max_average_through_time(y_predicted, dim=1)
 
             # Compare
-            if torch.equal(y_predicted, labels):
+            if torch.equal(y_predicted, label):
                 successes += 1.0
             # end if
             count += 1.0
         # end for
 
         # Show accuracy
-        print(u"Leaky rate {}, Problem {}, Accuracy : {}".format(leaky_rate, problem, successes / count * 100.0))
+        print(u"\tProblem {}, Accuracy : {} ({})".format(problem, successes / count * 100.0, 1.0 / n_authors * 100.0))
+        results[index] = successes / count * 100.0
+        index += 1
     # end for
 # end for
+
+plt.plot(results)
+plt.show()

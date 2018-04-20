@@ -34,6 +34,7 @@ class AuthorIdentificationDataset(Dataset):
         self.authors = list()
         self.last_text = ""
         self.problem_name = ""
+        self.n_authors = 0
 
         # List of text
         self.texts = list()
@@ -154,6 +155,7 @@ class AuthorIdentificationDataset(Dataset):
 
                 # Load texts
                 if self.train:
+                    self.n_authors = len(candidate_authors)
                     # Load candidate texts
                     for candidate_author in candidate_authors:
                         # Author name

@@ -137,7 +137,7 @@ for reservoir_size in np.linspace(20, 2000, 30):
             y_predicted = echotorch.utils.max_average_through_time(y_predicted, dim=1)
 
             # Compare
-            if torch.equal(y_predicted, labels):
+            if torch.equal(y_predicted, label):
                 successes += 1.0
             # end if
             count += 1.0
