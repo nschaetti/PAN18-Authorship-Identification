@@ -38,8 +38,8 @@ spectral_radius = 0.95
 input_sparsity = 0.1
 w_sparsity = 0.1
 input_scaling = 0.5
-n_test = 2
-n_samples = 2
+n_test = 30
+n_samples = 10
 
 # Argument
 args = tools.functions.argument_parser_training_model()
@@ -56,7 +56,7 @@ parameter_max = np.zeros(n_test)
 
 # For each leaky rate values
 index = 0
-for leaky_rate in np.linspace(0.001, 0.002, n_test):
+for leaky_rate in np.linspace(0.001, 0.5, n_test):
     # Log
     print(u"Leaky rate : {}".format(leaky_rate))
 
@@ -189,7 +189,7 @@ for leaky_rate in np.linspace(0.001, 0.002, n_test):
 
     # Save results
     parameter_averages[index] = np.average(samples_average)
-    parameter_averages[index] = np.max(samples_average)
+    parameter_max[index] = np.max(samples_average)
     index += 1
 # end for
 
