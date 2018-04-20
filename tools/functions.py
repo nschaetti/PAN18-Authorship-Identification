@@ -68,6 +68,9 @@ def save_results(output_file, results_dict):
     :param results_dict:
     :return:
     """
+    # Log
+    print(u"Writing output {}".format(output_file))
+
     # JSON list
     json_results = list()
 
@@ -78,5 +81,38 @@ def save_results(output_file, results_dict):
     # end for
 
     # Write
-    json.dump(json_results, open(output_file, 'w'))
+    json.dump(json_results, open(output_file, 'w'), indent=True)
 # end save_results
+
+
+#################
+# Results
+#################
+
+
+# Get each lang and number of problems
+def data_info(input_dir):
+    """
+    Get each lang and number of problems
+    :param input_dir:
+    :return:
+    """
+    # Output file path
+    input_path = os.path.join(input_dir, "collection-info.json")
+
+    # Load info
+    collection_info = json.load(open(input_path, 'r'))
+
+    # Infos
+    infos = dict()
+
+    # For each problem
+    for problem in collection_info:
+        if problem['language'] not in infos.keys():
+            infos[problem['language']] = 0
+        # end if
+        infos[problem['language']] += 1
+    # end for
+
+    return infos
+# end data_info
