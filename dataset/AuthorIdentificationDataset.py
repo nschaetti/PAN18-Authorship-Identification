@@ -32,6 +32,8 @@ class AuthorIdentificationDataset(Dataset):
         self.train = train
         self.transform = transform
         self.authors = list()
+        self.last_text = ""
+        self.problem_name = ""
 
         # List of text
         self.texts = list()
@@ -72,6 +74,7 @@ class AuthorIdentificationDataset(Dataset):
         """
         # Current file
         text_path, author_name = self.texts[item]
+        self.last_text = text_path[text_path.rfind('/')+1:]
 
         # Read text
         text_content = codecs.open(text_path, 'r', encoding='utf-8').read()
@@ -140,6 +143,7 @@ class AuthorIdentificationDataset(Dataset):
             if problem['language'] == self.lang and problem_index == self.problem:
                 # Problem name
                 problem_name = problem['problem-name']
+                self.problem_name = problem_name
 
                 # Load problem info
                 problem_info = json.load(open(os.path.join(self.root, problem_name, "problem-info.json")))
