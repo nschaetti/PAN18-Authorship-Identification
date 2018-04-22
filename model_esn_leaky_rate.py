@@ -30,16 +30,16 @@ import matplotlib.pyplot as plt
 import tools.functions
 import tools.settings
 import numpy as np
-from sklearn.metrics import recall_score
+from sklearn.metrics import recall_score, precision_score, f1_score
 
 # Experiment settings
-reservoir_size = 1000
+reservoir_size = 300
 spectral_radius = 0.95
 input_sparsity = 0.1
 w_sparsity = 0.1
 input_scaling = 0.5
-n_test = 30
-n_samples = 10
+n_test = 20
+n_samples = 30
 
 # Argument
 args = tools.functions.argument_parser_training_model()
@@ -68,15 +68,15 @@ for leaky_rate in np.linspace(0.001, 0.5, n_test):
         # Create W matrix
         w = etnn.ESNCell.generate_w(reservoir_size, w_sparsity)
 
-        # Truth and prediction
-        y_true = np.array([])
-        y_pred = np.array([])
-
         # Sample average
         single_sample_average = np.array([])
 
         # For each problem
         for problem in np.arange(1, 3):
+            # Truth and prediction
+            y_true = np.array([])
+            y_pred = np.array([])
+
             # Author identification training dataset
             pan18loader_training = torch.utils.data.DataLoader(
                 dataset.AuthorIdentificationDataset(root="./data/", download=True, transform=transformer, problem=problem, lang=args.lang),
@@ -163,18 +163,11 @@ for leaky_rate in np.linspace(0.001, 0.5, n_test):
                 y_pred = np.append(y_pred, int(y_predicted[0]))
             # end for
 
-            # Precision and recall
-            precision = float(np.sum(y_true == y_pred)) / float(y_pred.shape[0])
-            recall = recall_score(y_true, y_pred, average='macro')
-
             # F1
-            f1_score = 2.0 * ((precision * recall) / (precision + recall))
-
-            # Show accuracy
-            # print(u"\tProblem {}, Precision : {}, Recall : {}, F1 _ {}".format(problem, precision, recall, f1_score))
+            sample_f1_score = f1_score(y_true, y_pred, average='macro')
 
             # Save result
-            single_sample_average = np.append(single_sample_average, [f1_score])
+            single_sample_average = np.append(single_sample_average, [sample_f1_score])
 
             # Reset ESN
             esn.reset()
