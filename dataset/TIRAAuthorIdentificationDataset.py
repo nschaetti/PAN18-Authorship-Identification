@@ -29,7 +29,6 @@ class TIRAAuthorIdentificationDataset(Dataset):
         self.transform = transform
         self.authors = list()
         self.last_text = ""
-        self.problem_name = ""
         self.n_authors = 0
         self.train = train
         self.encoding = encoding
@@ -135,7 +134,7 @@ class TIRAAuthorIdentificationDataset(Dataset):
             # end for
         else:
             # For each test files
-            for unknown_file in os.path.join(self.root, self.problem_name, unknown_folder):
+            for unknown_file in os.listdir(os.path.join(self.root, self.problem_name, unknown_folder)):
                 # Add with author name
                 self.texts.append((os.path.join(self.root, self.problem_name, unknown_folder, unknown_file), ""))
             # end for
