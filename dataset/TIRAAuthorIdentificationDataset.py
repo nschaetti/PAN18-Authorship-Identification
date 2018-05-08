@@ -17,11 +17,11 @@ class TIRAAuthorIdentificationDataset(Dataset):
     """
 
     # Constructor
-    def __init__(self, root, problem_name, transform=None):
+    def __init__(self, root, problem_name, transform, train, encoding):
         """
         Constructor
         :param root:
-        :param problem:
+        :param problem_name:
         """
         # Properties
         self.root = root
@@ -31,6 +31,8 @@ class TIRAAuthorIdentificationDataset(Dataset):
         self.last_text = ""
         self.problem_name = ""
         self.n_authors = 0
+        self.train = train
+        self.encoding = encoding
 
         # List of text
         self.texts = list()
@@ -40,16 +42,17 @@ class TIRAAuthorIdentificationDataset(Dataset):
     # end if
 
     ##############################################
-    # Public
+    # Static
     ##############################################
 
     # Get collection info
-    def colelction_infos(self):
+    @staticmethod
+    def collection_infos(root):
         """
         Get collection info
         :return:
         """
-        return json.load(open(os.path.join(self.root, "collection-info.json"), 'r'))
+        return json.load(open(os.path.join(root, "collection-info.json"), 'r'))
     # end colelction_infos
 
     ##############################################
@@ -77,7 +80,7 @@ class TIRAAuthorIdentificationDataset(Dataset):
         self.last_text = text_path[text_path.rfind('/')+1:]
 
         # Read text
-        text_content = codecs.open(text_path, 'r', encoding='utf-8').read()
+        text_content = codecs.open(text_path, 'r', encoding=self.encoding).read()
 
         # Transformed
         transformed = self.transform(text_content)
@@ -107,27 +110,36 @@ class TIRAAuthorIdentificationDataset(Dataset):
         problem_info = json.load(open(os.path.join(self.root, self.problem_name, "problem-info.json")))
 
         # Info
+        unknown_folder = problem_info['unknown-folder']
         candidate_authors = problem_info['candidate-authors']
 
         # Load texts
-        self.n_authors = len(candidate_authors)
+        if self.train:
+            self.n_authors = len(candidate_authors)
 
-        # Load candidate texts
-        for candidate_author in candidate_authors:
-            # Author name
-            author_name = candidate_author['author-name']
+            # Load candidate texts
+            for candidate_author in candidate_authors:
+                # Author name
+                author_name = candidate_author['author-name']
 
-            # Add  to authors
-            if author_name not in self.authors:
-                self.authors.append(author_name)
-            # end if
+                # Add  to authors
+                if author_name not in self.authors:
+                    self.authors.append(author_name)
+                # end if
 
-            # For each text
-            for file_path in os.listdir(os.path.join(self.root, self.problem_name, author_name)):
-                # Add with author name
-                self.texts.append((os.path.join(self.root, self.problem_name, author_name, file_path), author_name))
+                # For each text
+                for file_path in os.listdir(os.path.join(self.root, self.problem_name, author_name)):
+                    # Add with author name
+                    self.texts.append((os.path.join(self.root, self.problem_name, author_name, file_path), author_name))
+                # end for
             # end for
-        # end for
+        else:
+            # For each test files
+            for unknown_file in os.path.join(self.root, self.problem_name, unknown_folder):
+                # Add with author name
+                self.texts.append((os.path.join(self.root, self.problem_name, unknown_folder, unknown_file), ""))
+            # end for
+        # end if
     # end _load
 
-# end AuthorIdentificationDataset
+# end TIRAAuthorIdentificationDataset

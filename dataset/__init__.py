@@ -1,3 +1,4 @@
 
 
 from .AuthorIdentificationDataset import AuthorIdentificationDataset
+from .TIRAAuthorIdentificationDataset import TIRAAuthorIdentificationDataset
