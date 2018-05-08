@@ -22,11 +22,20 @@ reservoir_size = 400
 
 # Settings
 lang_models = {
-    'en': 'en_vectors_web_lg',
-    'fr': 'fr_core_news_md',
-    'it': '~/Projets/TURING/Datasets/fasttext/wiki.it/wiki.it.vec',
-    'sp': '~/Projets/TURING/Datasets/fasttext/wiki.es/wiki.es.vec',
-    'pl': '~/Projets/TURING/Datasets/fasttext/wiki.pl/wiki.pl.vec'
+    'schaetti-desktop': {
+        'en': 'en_vectors_web_lg',
+        'fr': 'fr_core_news_md',
+        'it': '~/Projets/TURING/Datasets/fasttext/wiki.it/wiki.it.vec',
+        'sp': '~/Projets/TURING/Datasets/fasttext/wiki.es/wiki.es.vec',
+        'pl': '~/Projets/TURING/Datasets/fasttext/wiki.pl/wiki.pl.vec'
+    },
+    'tira-ubuntu': {
+        'en': 'en_vectors_web_lg',
+        'fr': 'fr_core_news_md',
+        'it': '/mnt/data/wiki.it.vec',
+        'sp': '/mnt/data/wiki.es.vec',
+        'pl': '/mnt/data/wiki.pl.vec'
+    }
 }
 
 lang_spacy_models = {
@@ -54,4 +63,3 @@ lang_models_lang = {
     'sp': 'spanish',
     'pl': 'polish',
 }
-
