@@ -30,6 +30,7 @@ import tools.functions
 import tools.settings
 import os
 import echotorch
+import socket
 
 
 # Argument
@@ -45,21 +46,24 @@ collection_info = dataset.TIRAAuthorIdentificationDataset.collection_infos(args.
 for problem_description in collection_info:
     # Problem name
     problem_name = problem_description['problem-name']
-    problem_lang = problem_description['lang']
+    problem_lang = problem_description['language']
     problem_encoding = problem_description['encoding']
 
+    # Log
+    print(u"Working on {} ({})".format(problem_name, problem_lang))
+
     # Transformer
-    if args.lang == 'en' or args.lang == 'fr':
+    if problem_lang == 'en' or problem_lang == 'fr':
         transformer = transforms.Compose([
             # transforms.RemoveLines(),
-            transforms.GloveVector(model=tools.settings.lang_models[problem_lang])
+            transforms.GloveVector(model=tools.settings.lang_models[socket.gethostname()][problem_lang])
         ])
     else:
         transformer = transforms.Compose([
             # transforms.RemoveLines(),
             transforms.Token(model=tools.settings.lang_spacy_models[problem_lang],
                              lang=tools.settings.lang_models_lang[problem_lang]),
-            transforms.GensimModel(model_path=tools.settings.lang_models[problem_lang])
+            transforms.GensimModel(model_path=tools.settings.lang_models[socket.gethostname()][problem_lang])
         ])
     # end if
 
@@ -100,7 +104,7 @@ for problem_description in collection_info:
 
     # ESN cell
     esn = etnn.BDESN(
-        input_dim=transformer.transforms[1].input_dim,
+        input_dim=settings.lang_models_dim[problem_lang],
         hidden_dim=settings.reservoir_size,
         output_dim=n_authors,
         spectral_radius=settings.spectral_radius,
@@ -163,7 +167,7 @@ for problem_description in collection_info:
         problem_file = pan18loader_unknown.dataset.last_text
 
         # Save results
-        results[problem_file] = idx_to_author[y_predicted[0]]
+        results[problem_file] = idx_to_author[int(y_predicted[0])]
     # end for
 
     # Save result in file
