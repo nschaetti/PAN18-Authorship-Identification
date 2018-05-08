@@ -38,7 +38,7 @@ input_sparsity = 0.1
 w_sparsity = 0.2
 input_scaling = 0.5
 leak_rate = 0.1
-n_samples = 15
+n_samples = 20
 
 # Argument
 args = tools.functions.argument_parser_training_model()
@@ -50,13 +50,16 @@ transformer = transforms.Compose([
 ])
 
 # Results
-parameter_averages = np.zeros((5, 10))
-parameter_max = np.zeros((5, 10))
+parameter_averages = np.zeros((4, 4))
+parameter_max = np.zeros((4, 4))
 
 # For each reservoir size
-for index1, reservoir_size in enumerate([100, 200, 300, 400, 500]):
+for index1, reservoir_size in enumerate([400, 500, 600, 700]):
     # For each number of layer
-    for index2, n_layer in enumerate(np.arange(5, 11)):
+    for index2, n_layer in enumerate(np.arange(1, 5)):
+        # Log
+        print(u"Testing Stacked-ESN with {} layers of size {}".format(n_layer, reservoir_size))
+
         # For each sample
         for n in range(n_samples):
             # Create W matrix
@@ -92,6 +95,13 @@ for index1, reservoir_size in enumerate([100, 200, 300, 400, 500]):
                 # Number of authors
                 n_authors = len(author_to_idx)
 
+                # Leaky rates
+                if n_layer == 1:
+                    leaky_rates = leak_rate
+                else:
+                    leaky_rates = np.linspace(1.0, leak_rate, n_layer).tolist()
+                # end if
+
                 # ESN cell
                 esn = etnn.StackedESN(
                     input_dim=transformer.transforms[1].input_dim,
@@ -102,7 +112,7 @@ for index1, reservoir_size in enumerate([100, 200, 300, 400, 500]):
                     input_scaling=input_scaling,
                     w_sparsity=w_sparsity,
                     learning_algo='inv',
-                    leaky_rate=np.linspace(1.0, leak_rate, n_layer).tolist()
+                    leaky_rate=leaky_rates
                 )
 
                 # Get training data for this fold
@@ -120,9 +130,6 @@ for index1, reservoir_size in enumerate([100, 200, 300, 400, 500]):
 
                     # Accumulate xTx and xTy
                     hidden_states = esn(inputs, time_labels)
-                    print(hidden_states.size())
-                    plt.imshow(hidden_states.data[0].t().numpy(), cmap='Greys')
-                    plt.show()
                 # end for
 
                 # Finalize training
