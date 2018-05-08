@@ -76,8 +76,9 @@ def save_results(output_file, results_dict):
 
     # For each result
     for problem_file in results_dict.keys():
-        predicted_author = "candidate" + str(results_dict[problem_file]).zfill(5)
+        predicted_author = results_dict[problem_file]
         json_results.append({"unknown-text": problem_file, "predicted-author": predicted_author})
+        print(u"Predicted author {} for problem {}".format(predicted_author, problem_file))
     # end for
 
     # Write
