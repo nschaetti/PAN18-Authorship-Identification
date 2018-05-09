@@ -42,6 +42,9 @@ data_infos = tools.functions.data_info(args.input_dataset)
 # Collection info
 collection_info = dataset.TIRAAuthorIdentificationDataset.collection_infos(args.input_dataset)
 
+# Log collection info
+print(collection_info)
+
 # For each problem
 for problem_description in collection_info:
     # Problem name
