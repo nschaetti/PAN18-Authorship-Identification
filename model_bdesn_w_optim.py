@@ -32,6 +32,7 @@ import tools.settings
 import numpy as np
 from sklearn.metrics import recall_score, f1_score
 import math
+import socket
 
 # Experiment settings
 spectral_radius = 0.95
@@ -50,13 +51,13 @@ args = tools.functions.argument_parser_training_model()
 if args.lang == 'en' or args.lang == 'fr':
     transformer = transforms.Compose([
         # transforms.RemoveLines(),
-        transforms.GloveVector(model=tools.settings.lang_models[args.lang])
+        transforms.GloveVector(model=tools.settings.lang_models[socket.gethostname()][args.lang])
     ])
 else:
     transformer = transforms.Compose([
         # transforms.RemoveLines(),
         transforms.Token(model=tools.settings.lang_spacy_models[args.lang], lang=tools.settings.lang_models_lang[args.lang]),
-        transforms.GensimModel(model_path=tools.settings.lang_models[args.lang])
+        transforms.GensimModel(model_path=tools.settings.lang_models[socket.gethostname()][args.lang])
     ])
 # end if
 
