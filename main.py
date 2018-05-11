@@ -45,6 +45,11 @@ collection_info = dataset.TIRAAuthorIdentificationDataset.collection_infos(args.
 # Log collection info
 print(collection_info)
 
+# Last lang
+lang_lang = ""
+transformer = None
+w = None
+
 # For each problem
 for problem_description in collection_info:
     # Problem name
@@ -55,19 +60,22 @@ for problem_description in collection_info:
     # Log
     print(u"Working on {} ({})".format(problem_name, problem_lang))
 
-    # Transformer
-    if problem_lang == 'en' or problem_lang == 'fr':
-        transformer = transforms.Compose([
-            # transforms.RemoveLines(),
-            transforms.GloveVector(model=tools.settings.lang_models[socket.gethostname()][problem_lang])
-        ])
-    else:
-        transformer = transforms.Compose([
-            # transforms.RemoveLines(),
-            transforms.Token(model=tools.settings.lang_spacy_models[problem_lang],
-                             lang=tools.settings.lang_models_lang[problem_lang]),
-            transforms.GensimModel(model_path=tools.settings.lang_models[socket.gethostname()][problem_lang])
-        ])
+    # Transformer and W
+    if lang_lang != problem_lang:
+        if problem_lang == 'en' or problem_lang == 'fr':
+            transformer = transforms.Compose([
+                # transforms.RemoveLines(),
+                transforms.GloveVector(model=tools.settings.lang_models[socket.gethostname()][problem_lang])
+            ])
+        else:
+            transformer = transforms.Compose([
+                # transforms.RemoveLines(),
+                transforms.Token(model=tools.settings.lang_spacy_models[problem_lang],
+                                 lang=tools.settings.lang_models_lang[problem_lang]),
+                transforms.GensimModel(model_path=tools.settings.lang_models[socket.gethostname()][problem_lang])
+            ])
+        # end if
+        w = torch.load(open('W/' + problem_lang + '.pth', 'rb'))
     # end if
 
     # Author identification training dataset
@@ -116,7 +124,7 @@ for problem_description in collection_info:
         w_sparsity=settings.w_sparsity,
         learning_algo='inv',
         leaky_rate=settings.leaky_rate,
-        w=torch.load(open('W/' + problem_lang + '.pth', 'rb'))
+        w=w
     )
 
     # Get training data for this fold
@@ -180,4 +188,7 @@ for problem_description in collection_info:
         os.path.join(args.output_dir, "answers-{}.json".format(problem_name)),
         results
     )
+
+    # Lang lang
+    lang_lang = problem_lang
 # end for
