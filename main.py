@@ -121,6 +121,7 @@ for problem_description in collection_info:
 
     # Get training data for this fold
     for i, data in enumerate(pan18loader_training):
+        print(u"Learning from {}".format(pan18loader_training.dataset.last_text))
         # Inputs and labels
         inputs, labels = data
 
@@ -144,6 +145,7 @@ for problem_description in collection_info:
 
     # Get test data
     for i, data in enumerate(pan18loader_unknown):
+        print(u"Evaluating {}".format(pan18loader_unknown.dataset.last_text))
         # Inputs and labels
         inputs, _ = data
 
