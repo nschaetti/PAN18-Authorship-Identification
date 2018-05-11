@@ -191,4 +191,7 @@ for problem_description in collection_info:
 
     # Lang lang
     lang_lang = problem_lang
+
+    # Remove ESN
+    esn = None
 # end for
