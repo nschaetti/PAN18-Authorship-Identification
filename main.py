@@ -75,7 +75,9 @@ for problem_description in collection_info:
                 transforms.GensimModel(model_path=tools.settings.lang_models[socket.gethostname()][problem_lang])
             ])
         # end if
+        print(u"Loading W")
         w = torch.load(open('W/' + problem_lang + '.pth', 'rb'))
+        print(u"W loaded")
     # end if
     print(u"Author identification training dataset")
     # Author identification training dataset
