@@ -35,21 +35,21 @@ import socket
 
 # Argument
 args = tools.functions.argument_parser_execution()
-
+print(args)
 # Dataset info
 data_infos = tools.functions.data_info(args.input_dataset)
-
+print(u"1")
 # Collection info
 collection_info = dataset.TIRAAuthorIdentificationDataset.collection_infos(args.input_dataset)
-
+print(u"2")
 # Log collection info
 print(collection_info)
-
+print(u"3")
 # Last lang
 lang_lang = ""
 transformer = None
 w = None
-
+print(u"4")
 # For each problem
 for problem_description in collection_info:
     # Problem name
@@ -77,7 +77,7 @@ for problem_description in collection_info:
         # end if
         w = torch.load(open('W/' + problem_lang + '.pth', 'rb'))
     # end if
-
+    print(u"Author identification training dataset")
     # Author identification training dataset
     pan18loader_training = torch.utils.data.DataLoader(
         dataset.TIRAAuthorIdentificationDataset(
@@ -89,7 +89,7 @@ for problem_description in collection_info:
         ),
         batch_size=1, shuffle=True
     )
-
+    print(u"Author identification unknown dataset")
     # Author identification unknown dataset
     pan18loader_unknown = torch.utils.data.DataLoader(
         dataset.TIRAAuthorIdentificationDataset(
@@ -101,7 +101,7 @@ for problem_description in collection_info:
         ),
         batch_size=1, shuffle=True
     )
-
+    print(u"Authors")
     # Authors
     author_to_idx = dict()
     idx_to_author = dict()
@@ -112,7 +112,7 @@ for problem_description in collection_info:
 
     # Number of authors
     n_authors = len(author_to_idx)
-
+    print(n_authors)
     # ESN cell
     esn = etnn.BDESN(
         input_dim=settings.lang_models_dim[problem_lang],
