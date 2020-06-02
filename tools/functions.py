@@ -28,8 +28,11 @@ def argument_parser_training_model():
 
     # Argument
     parser.add_argument("--lang", type=str, help="Problem language (en, fr, it, pl, sp)", default='en')
+    parser.add_argument("--feature-selector", type=str, help="Path to feature selector model", required=False)
+    parser.add_argument("--feature-selector-voc", type=str, help="Path to feature selector model voc", required=False)
+    parser.add_argument("--no-cuda", action='store_true', default=False, help="Enables CUDA training")
     args = parser.parse_args()
-
+    args.cuda = not args.no_cuda and torch.cuda.is_available()
     # Use CUDA?
     return args
 # end argument_parser_training_model
